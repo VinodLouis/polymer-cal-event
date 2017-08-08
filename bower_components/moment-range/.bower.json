@@ -1,0 +1,15 @@
+{
+  "name": "moment-range",
+  "homepage": "https://github.com/gf3/moment-range",
+  "version": "3.0.3",
+  "_release": "3.0.3",
+  "_resolution": {
+    "type": "version",
+    "tag": "v3.0.3",
+    "commit": "f8a87ab4ae1274394c1ad619ee90e2197997f47a"
+  },
+  "_source": "https://github.com/gf3/moment-range.git",
+  "_target": "^3.0.3",
+  "_originalSource": "moment-range",
+  "_direct": true
+}

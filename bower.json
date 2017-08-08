@@ -2,7 +2,8 @@
   "name": "polymer-cal-event",
   "main": "polymer-cal-event.html",
   "dependencies": {
-    "polymer": "Polymer/polymer#^2.0.0"
+    "polymer": "Polymer/polymer#^2.0.0",
+    "moment": "^2.18.1"
   },
   "devDependencies": {
     "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^2.0.0",
