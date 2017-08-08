@@ -1,0 +1,36 @@
+<link rel="import" href="../polymer/polymer-element.html">
+
+<dom-module id="polymer-cal-event">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+    <h2>Hello [[prop1]]!</h2>
+  </template>
+
+  <script>
+    /**
+     * `polymer-cal-event`
+     * 
+     *
+     * @customElement
+     * @polymer
+     * @demo demo/index.html
+     */
+    class PolymerCalEvent extends Polymer.Element {
+      static get is() { return 'polymer-cal-event'; }
+      static get properties() {
+        return {
+          prop1: {
+            type: String,
+            value: 'polymer-cal-event'
+          }
+        };
+      }
+    }
+
+    window.customElements.define(PolymerCalEvent.is, PolymerCalEvent);
+  </script>
+</dom-module>
