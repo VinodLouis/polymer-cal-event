@@ -1,208 +1,266 @@
-<link rel="import" href="../polymer/polymer-element.html">
-<link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
-<script type="text/javascript" src="../moment/min/moment.min.js"></script>
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<script type="text/javascript" src="../bower_components/moment/min/moment.min.js"></script>
 <script type="text/javascript" src="../scripts/moment-range.min.js"></script>
+
 <dom-module id="polymer-cal-event">
-  <template>
-    <style>
-      :host {
-        display: block;
-      }
-
-      .item-day{
-        margin:2px;
-        cursor:pointer;
-      }
-
-      .item-day:hover{
-        background-color: #eee;
-      }
-
-      .current-month-false{
-        color: #999;
-      }
-
-      .current-month-true{
-        color: #333;
-      }
-
-      .selected-true{
-        background-color: #666;
-        color: #fff;
-      }
-      .selected-true:hover{
-        background-color: #999;
-        color: #fff;
-      }
-      .today-true{
-        background-color: #0000ff;
-        color:#fff;    
-      }
-      .bold-font{
-        font-weight: bold;
-      }
-    </style>
-    <style include="iron-flex"></style>
-    <style include="iron-flex-factors"></style>
-    <style include="iron-flex-alignment"></style>
-    <div>
-      <div class="flex layout horizontal">
-        <div on-click="previousMonth" class="flex-1 layout horizontal center-justified bold-font">&lt;</div>
-        <div class="flex-5 layout horizontal center-justified bold-font">[[monthName]]</div>
-        <div class="flex-5 layout horizontal center-justified bold-font">[[dateRenderer.year]]</div>
-        <div on-click="nextMonth" class="flex-1 layout horizontal center-justified bold-font">&gt;</div>
-      </div>
-      <br/>
-      <div class="flex layout horizontal">
-        <div class="flex layout horizontal center-justified bold-font">Mon</div>
-        <div class="flex layout horizontal center-justified bold-font">Tue</div>
-        <div class="flex layout horizontal center-justified bold-font">Wed</div>
-        <div class="flex layout horizontal center-justified bold-font">Thu</div>
-        <div class="flex layout horizontal center-justified bold-font">Fri</div>
-        <div class="flex layout horizontal center-justified bold-font">Sat</div>
-        <div class="flex layout horizontal center-justified bold-font">Sun</div>
-      </div>
-      <template is="dom-repeat" items="[[currDateArray]]" as="week">
-          <div class="flex layout horizontal">
-              <template is="dom-repeat" items="[[week.dayList]]" as="day">
-                  <div class$="flex layout horizontal center-justified item-day selected-[[day.isSelected]] today-[[day.isToday]] current-month-[[day.isCurrentMonth]] ">[[day.displayDate]]</div>
-              </template>
-          </div>
-      </template>
-    </div>
-  </template>
-
-  <script>
-    /**
-     * `polymer-cal-event`
-     * 
-     *
-     * @customElement
-     * @polymer
-     * @demo demo/index.html
-     */
-    class PolymerCalEvent extends Polymer.Element {
-      static get is() { return 'polymer-cal-event'; }
-      static get properties() {
-        return {
-
-          selectedDate:{
-            type:Date,
-            value:moment()
-          },
-          currDateArray:{
-              type:Array,
-              value:[]
-          },
-          dateRenderer:{
-              type:Object,
-              value:{
-                  month:null,
-                  year:null,
-                  calendar:null
-              }
-          },
-          monthName:{
-            type:String,
-            computed:'_computeMonth(dateRenderer.month)'
-          }  
-        };
-      }
-      _computeMonth(mon){
-        if(typeof mon === "number")
-          return moment().month(mon).format("MMMM");
-        return "";
-      }
-      ready(){
-        super.ready();
-        //console.log(this.dateRenderer);
-        this.set('dateRenderer.month',moment().month());
-        this.set('dateRenderer.year',moment().year());
-        this.set('dateRenderer.calendar',this.getCalendar(this.dateRenderer.year,this.dateRenderer.month));
-        //console.log(this.dateRenderer);
-        this.setRenderedData(this.dateRenderer.calendar);
-      }
-      previousMonth(e){
-        e.preventDefault();
-        if (this.dateRenderer.month == 0){
-          this.set('dateRenderer.month',11);
-          this.set('dateRenderer.year',this.dateRenderer.year - 1);
-        }
-        else {
-          this.set('dateRenderer.month',this.dateRenderer.month - 1);
-        }
-        this.set('dateRenderer.calendar',this.getCalendar(this.dateRenderer.year,this.dateRenderer.month));
-        this.setRenderedData(this.dateRenderer.calendar);  
-      }
-      nextMonth(e){
-        e.preventDefault();
-        if (this.dateRenderer.month == 11){
-          this.set('dateRenderer.month',0)
-          this.set('dateRenderer.year',this.dateRenderer.year+1);
-        }
-        else{
-          this.set('dateRenderer.month',this.dateRenderer.month+1);
-        }
-        this.set('dateRenderer.calendar',this.getCalendar(this.dateRenderer.year,this.dateRenderer.month));
-        this.setRenderedData(this.dateRenderer.calendar); 
-      }
-      setRenderedData(data){
-        var self = this;
-        var currDateArrayMock = [];
-
-        data.forEach(function(week,ind){
-            week.dayList = [];
-            week.by('days', function(day){
-              week.dayList.push(day)
-            });
-            week.dayList.forEach(function(day){
-                day.isCurrentMonth = (day.month() == self.dateRenderer.month) ? true : false;
-                day.isToday = (day.format('DD-MM-YYYY') == moment().format('DD-MM-YYYY')) ? true : false;
-                day.isSelected = (day.format('DD-MM-YYYY') == self.selectedDate.format('DD-MM-YYYY')) ? true : false;
-                day.displayDate = day.format('D');
-            });
-            week.weekIndex = ind;
-            currDateArrayMock.push(week);
-        });
-        this.set('currDateArray',currDateArrayMock)
-        console.log(this.currDateArray);
-      }
-
-      getCalendar(year,month){
-        var indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
-        var startDate = moment([year, month]);
-        var firstDay = moment(startDate).startOf('month');
-        var endDay = moment(startDate).endOf('month');
-        var monthRange = moment.range(firstDay, endDay);
-
-        var weeks = [];
-        var week,firstWeekDay,lastWeekDay,weekRange = null;
-        monthRange.by('days', function(moment) {
-            var ref;
-            if (ref = moment.week(), indexOf.call(weeks, ref) < 0) {
-                return weeks.push(moment.week());
+    <template>
+        <style>
+            :host {
+                display: block;
             }
-        });
 
-        var calendar = [];
-
-        for (var i = 0, len = weeks.length; i < len; i++) {
-            week = weeks[i];
-            if (i > 0 && week < weeks[i-1]){
-                // We have switched to the next year
-                firstWeekDay = moment([year, month]).add(1, "year").week(week).day(1);
-                lastWeekDay = moment([year, month]).add(1, "year").week(week).day(7);
-            }else{
-                firstWeekDay = moment([year, month]).week(week).day(1);
-                lastWeekDay = moment([year, month]).week(week).day(7);
+            .cursor-pointer {
+                cursor: pointer;
             }
-            weekRange = moment.range(firstWeekDay, lastWeekDay);
-            calendar.push(weekRange);
-        }
-        return calendar;
-      }
-    }
 
-    window.customElements.define(PolymerCalEvent.is, PolymerCalEvent);
-  </script>
+            .item-day {
+                height: 30px;
+                width: 30px;
+                line-height: 30px;
+                text-align: center;
+                border-radius: 15px;
+            }
+            .item-day:hover {
+                background-color: #eee;
+            }
+
+            .current-month-true {
+                color: #333;
+            }
+            .current-month-false {
+                color: #999;
+            }
+
+            .selected-true {
+                background-color: #07a !important;
+                color: #fff !important;
+            }
+
+            .today-true {
+                background-color: #808080;
+                color: #fff;
+            }
+
+            .bold-font {
+                font-weight: bold;
+            }
+
+            .selected-date {
+                text-align: center;
+                padding: 5px;
+            }
+        </style>
+
+        <style include="iron-flex"></style>
+        <style include="iron-flex-factors"></style>
+        <style include="iron-flex-alignment"></style>
+
+        <div>
+            <div class="flex layout horizontal bold-font">
+                <div class="flex-1 layout horizontal center-justified cursor-pointer" on-click="previousMonth">&lt;</div>
+                <div class="flex-5 layout horizontal center-justified">[[monthName]]</div>
+                <div class="flex-5 layout horizontal center-justified">[[dateRenderer.year]]</div>
+                <div class="flex-1 layout horizontal center-justified cursor-pointer" on-click="nextMonth">&gt;</div>
+            </div>
+            <br/>
+            <div class="flex layout horizontal bold-font">
+                <template is="dom-repeat" items="[[days.data]]">
+                    <div class="flex layout horizontal center-justified">[[getFormattedDay(item)]]</div>
+                </template>
+            </div>
+            <template is="dom-repeat" items="[[currDateArray]]" as="week">
+                <div class="flex layout horizontal">
+                    <template is="dom-repeat" items="[[week.dayList]]" as="day">
+                        <div class="flex layout horizontal center-justified">
+                            <div id="selectedDate_[[day.isSelected]]" class$="item-day cursor-pointer selected-[[day.isSelected]] today-[[day.isToday]] current-month-[[day.isCurrentMonth]]" on-click="setCurrentDate">
+                                [[day.displayDate]]
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+        </div>
+        <div class="bold-font selected-true selected-date">[[getFormattedDate(selectedDate)]]</div>
+    </template>
+
+    <script>
+        /**
+         * `polymer-cal-event`
+         *
+         *
+         * @customElement
+         * @polymer
+         * @demo demo/index.html
+         */
+        class PolymerCalEvent extends Polymer.Element {
+            static get is() { return 'polymer-cal-event'; }
+            static get properties() {
+                return {
+                    dateFormat: {
+                        type: String,
+                        value: 'DD-MMM-YYYY'
+                    },
+                    displayShorthandDay: {
+                        type: Boolean,
+                        value: true
+                    },
+                    selectedDate: {
+                        type: Date,
+                        value: moment()
+                      },
+                    days: {
+                        type: Object,
+                        value: {
+                            startDay: 0,
+                            data: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+                        }
+                    },
+                    currDateArray: {
+                        type: Array,
+                        value: []
+                    },
+                    dateRenderer: {
+                        type: Object,
+                        value: {
+                            month: null,
+                            year: null,
+                            calendar: null
+                        }
+                    },
+                    monthName: {
+                        type: String,
+                        computed: '_computeMonth(dateRenderer.month)'
+                    }
+                };
+            }
+
+            _computeMonth(mon) {
+                if(typeof mon === "number")
+                    return moment().month(mon).format("MMMM");
+                return "";
+            }
+
+            getFormattedDay(day) {
+                return (this.displayShorthandDay) ? day.substr(0, 3) : day;
+            }
+
+            getFormattedDate(date) {
+                return date.format(this.dateFormat);
+            }
+
+            ready() {
+                super.ready();
+                //console.log(this.dateRenderer);
+                this.set('dateRenderer.month', moment().month());
+                this.set('dateRenderer.year', moment().year());
+                this.set('dateRenderer.calendar', this.getCalendar(this.dateRenderer.year, this.dateRenderer.month));
+                //console.log(this.dateRenderer);
+                this.setRenderedData(this.dateRenderer.calendar);
+            }
+
+            previousMonth(e) {
+                e.preventDefault();
+                if (this.dateRenderer.month == 0) {
+                    this.set('dateRenderer.month',11);
+                    this.set('dateRenderer.year',this.dateRenderer.year - 1);
+                }
+                else {
+                    this.set('dateRenderer.month',this.dateRenderer.month - 1);
+                }
+                this.set('dateRenderer.calendar',this.getCalendar(this.dateRenderer.year,this.dateRenderer.month));
+                this.setRenderedData(this.dateRenderer.calendar);
+            }
+
+            nextMonth(e) {
+                e.preventDefault();
+                if (this.dateRenderer.month == 11) {
+                    this.set('dateRenderer.month',0)
+                    this.set('dateRenderer.year',this.dateRenderer.year+1);
+                }
+                else {
+                    this.set('dateRenderer.month',this.dateRenderer.month+1);
+                }
+                this.set('dateRenderer.calendar',this.getCalendar(this.dateRenderer.year,this.dateRenderer.month));
+                this.setRenderedData(this.dateRenderer.calendar);
+            }
+
+            setRenderedData(data) {
+                var self = this;
+                var currDateArrayMock = [];
+
+                data.forEach(function(week, ind) {
+                    week.dayList = [];
+                    week.by('days', function(day) {
+                        week.dayList.push(day)
+                    });
+                    week.dayList.forEach(function(day) {
+                        day.isCurrentMonth = (day.month() == self.dateRenderer.month) ? true : false;
+                        day.isToday = (day.format(self.dateFormat) == moment().format(self.dateFormat)) ? true : false;
+                        day.isSelected = (day.format(self.dateFormat) == self.selectedDate.format(self.dateFormat)) ? true : false;
+                        day.displayDate = day.format('D');
+                    });
+                    week.weekIndex = ind;
+                    currDateArrayMock.push(week);
+                });
+                this.set('currDateArray', currDateArrayMock)
+                console.log(this.currDateArray);
+            }
+
+            getCalendar(year, month) {
+                var indexOf = [].indexOf || function(item) {
+                    for (var i = 0, l = this.length; i < l; i++) {
+                        if (i in this && this[i] === item)
+                            return i;
+                    }
+                    return -1;
+                };
+                var startDate = moment([year, month]);
+                var firstDay = moment(startDate).startOf('month');
+                var endDay = moment(startDate).endOf('month');
+                var monthRange = moment.range(firstDay, endDay);
+
+                var weeks = [];
+                var week, firstWeekDay, lastWeekDay, weekRange = null;
+                monthRange.by('days', function(moment) {
+                    var ref;
+                    if (ref = moment.week(), indexOf.call(weeks, ref) < 0) {
+                        return weeks.push(moment.week());
+                    }
+                });
+
+                var calendar = [];
+                for (var i = 0, len = weeks.length; i < len; i++) {
+                    week = weeks[i];
+                    if (i > 0 && week < weeks[i-1]) {
+                        // We have switched to the next year
+                        firstWeekDay = moment([year, month]).add(1, "year").week(week).day(1);
+                        lastWeekDay = moment([year, month]).add(1, "year").week(week).day(7);
+                    } else {
+                        firstWeekDay = moment([year, month]).week(week).day(1);
+                        lastWeekDay = moment([year, month]).week(week).day(7);
+                    }
+                    weekRange = moment.range(firstWeekDay, lastWeekDay);
+                    calendar.push(weekRange);
+                }
+                return calendar;
+            }
+
+            setCurrentDate(e) {
+                var selectedDate = this.root.querySelector('#selectedDate_true');
+                if(selectedDate) {
+                    selectedDate.setAttribute('id', 'selectedDate_false');
+                    selectedDate.setAttribute('class', selectedDate.getAttribute('class').replace('selected-true', 'selected-false'));
+                }
+
+                e.target.setAttribute('id', 'selectedDate_true');
+                e.target.setAttribute('class', e.target.getAttribute('class').replace('selected-false', 'selected-true'));
+
+                this.selectedDate = moment("" + this.dateRenderer.year + moment.months(this.dateRenderer.month) + e.target.innerText, "YYYYMMMDD");
+            }
+        }
+
+        window.customElements.define(PolymerCalEvent.is, PolymerCalEvent);
+    </script>
 </dom-module>
